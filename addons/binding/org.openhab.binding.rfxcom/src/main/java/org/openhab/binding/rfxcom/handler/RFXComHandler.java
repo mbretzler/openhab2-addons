@@ -175,7 +175,7 @@ public class RFXComHandler extends BaseThingHandler implements DeviceMessageList
                                         updateState(CHANNEL_CHIME_SOUND, message.convertToState(valueSelector));
                                         break;
                                     case COMMAND:
-                                        postCommand(CHANNEL_COMMAND, (Command) message.convertToState(valueSelector));
+                                        postCommand(CHANNEL_COMMAND, message.convertToCommand(valueSelector));
                                         break;
                                     case COMMAND_ID:
                                         updateState(CHANNEL_COMMAND_ID, message.convertToState(valueSelector));

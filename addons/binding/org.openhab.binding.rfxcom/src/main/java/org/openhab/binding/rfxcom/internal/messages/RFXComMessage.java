@@ -10,6 +10,7 @@ package org.openhab.binding.rfxcom.internal.messages;
 
 import java.util.List;
 
+import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.State;
 import org.eclipse.smarthome.core.types.Type;
 import org.openhab.binding.rfxcom.RFXComValueSelector;
@@ -45,6 +46,15 @@ public interface RFXComMessage {
      * @return raw data.
      */
     byte[] decodeMessage() throws RFXComException;
+
+    /**
+     * Procedure for converting RFXCOM value to openHAB command.
+     *
+     * @param valueSelector
+     *
+     * @return openHAB command.
+     */
+    Command convertToCommand(RFXComValueSelector valueSelector) throws RFXComException;
 
     /**
      * Procedure for converting RFXCOM value to openHAB state.

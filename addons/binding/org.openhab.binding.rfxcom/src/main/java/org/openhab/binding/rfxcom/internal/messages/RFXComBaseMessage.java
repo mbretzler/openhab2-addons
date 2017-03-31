@@ -11,7 +11,9 @@ package org.openhab.binding.rfxcom.internal.messages;
 import javax.xml.bind.DatatypeConverter;
 
 import org.eclipse.smarthome.config.discovery.DiscoveryResultBuilder;
+import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.rfxcom.internal.config.RFXComDeviceConfiguration;
+import org.openhab.binding.rfxcom.RFXComValueSelector;
 import org.openhab.binding.rfxcom.internal.exceptions.RFXComException;
 import org.openhab.binding.rfxcom.internal.exceptions.RFXComUnsupportedValueException;
 
@@ -183,5 +185,10 @@ public abstract class RFXComBaseMessage implements RFXComMessage {
                 .withLabel(label)
                 .withProperty(RFXComDeviceConfiguration.DEVICE_ID_LABEL, getDeviceId())
                 .withProperty(RFXComDeviceConfiguration.SUB_TYPE_LABEL, subTypeString);
+    }
+
+    @Override
+    public Command convertToCommand(RFXComValueSelector valueSelector) throws RFXComException {
+        return (Command) convertToState(valueSelector);
     }
 }

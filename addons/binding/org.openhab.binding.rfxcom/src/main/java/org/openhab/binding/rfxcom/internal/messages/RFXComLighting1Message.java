@@ -16,8 +16,10 @@ import org.eclipse.smarthome.core.library.items.ContactItem;
 import org.eclipse.smarthome.core.library.items.NumberItem;
 import org.eclipse.smarthome.core.library.items.SwitchItem;
 import org.eclipse.smarthome.core.library.types.DecimalType;
+import org.eclipse.smarthome.core.library.types.IncreaseDecreaseType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.OpenClosedType;
+import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.State;
 import org.eclipse.smarthome.core.types.Type;
 import org.openhab.binding.rfxcom.RFXComValueSelector;
@@ -110,6 +112,8 @@ public class RFXComLighting1Message extends RFXComBaseMessage {
     public byte signalLevel;
     public boolean group;
 
+    private static byte[] lastUnit = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
     public RFXComLighting1Message() {
         packetType = PacketType.LIGHTING1;
     }
@@ -143,8 +147,17 @@ public class RFXComLighting1Message extends RFXComBaseMessage {
 
         if ((command == Commands.GROUP_ON) || (command == Commands.GROUP_OFF)) {
             unitCode = 0;
+        } else if ((data[5] == 0) && ((command == Commands.DIM) || (command == Commands.BRIGHT))) {
+            // SS13 switches broadcast DIM/BRIGHT to X0 and the dimmers ignore
+            // the message unless the last X<n> ON they saw was for them. So we
+            // redirect an incoming broadcast DIM/BRIGHT to the correct item
+            // based on the last X<n> we saw or sent.
+            unitCode = lastUnit[(int)houseCode - (int)'A'];
         } else {
             unitCode = data[5];
+            if (command == Commands.ON) {
+                lastUnit[(int)houseCode - (int)'A'] = unitCode;
+            }
         }
 
         signalLevel = (byte) ((data[7] & 0xF0) >> 4);
@@ -162,7 +175,18 @@ public class RFXComLighting1Message extends RFXComBaseMessage {
         data[2] = subType.toByte();
         data[3] = seqNbr;
         data[4] = (byte) houseCode;
-        data[5] = unitCode;
+        // When an SS13 sends a DIM/BRIGHT it broadcasts to the all-units code (X0)
+        // and it is up to the dimmers to ignore the message if the last X<n> they
+        // saw wasn't for them. Sending to an actual X<n> may or may not work.
+        // It is untested against _any_ dimmer never mind all so we stick to doing
+        // the same as an SS13. At least for now. Using an explicit X<n> would be
+        // better (if it works) because X10 RF and PLM are lossy and different
+        // modules may have seen different traffic.
+        if ((command == Commands.DIM) || (command == Commands.BRIGHT)) {
+            data[5] = 0;
+        } else {
+            data[5] = unitCode;
+        }
         data[6] = command.toByte();
         data[7] = (byte) ((signalLevel & 0x0F) << 4);
 
@@ -172,6 +196,55 @@ public class RFXComLighting1Message extends RFXComBaseMessage {
     @Override
     public String getDeviceId() {
         return houseCode + ID_DELIMITER + unitCode;
+    }
+
+    @Override
+    public Command convertToCommand(RFXComValueSelector valueSelector) throws RFXComException {
+
+        Command OHcommand;
+
+        if (valueSelector.getItemClass() == SwitchItem.class) {
+
+            if (valueSelector == RFXComValueSelector.COMMAND) {
+
+                switch (command) {
+                    case OFF:
+                    case GROUP_OFF:
+                        OHcommand = OnOffType.OFF;
+                        break;
+
+                    case ON:
+                    case GROUP_ON:
+                        OHcommand = OnOffType.ON;
+                        break;
+
+                    case DIM:
+                        OHcommand = IncreaseDecreaseType.DECREASE;
+                        break;
+
+                    case BRIGHT:
+                        OHcommand = IncreaseDecreaseType.INCREASE;
+                        break;
+
+                    case CHIME:
+                        OHcommand = OnOffType.ON;
+                        break;
+
+                    default:
+                        throw new RFXComException("Can't convert " + command + " to SwitchItem");
+                }
+
+            } else {
+                throw new RFXComException("Can't convert " + valueSelector + " to SwitchItem");
+            }
+
+        } else {
+
+            throw new RFXComException("Can't convert " + valueSelector + " to " + valueSelector.getItemClass());
+
+        }
+
+        return OHcommand;
     }
 
     @Override
