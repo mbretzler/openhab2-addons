@@ -172,7 +172,7 @@ public class RFXComHandler extends BaseThingHandler implements DeviceMessageList
                                                 message.convertToState(valueSelector)));
                                         break;
                                     case CHIME_SOUND:
-                                        updateState(CHANNEL_CHIME_SOUND, message.convertToState(valueSelector));
+                                        postCommand(CHANNEL_CHIME_SOUND, message.convertToCommand(valueSelector));
                                         break;
                                     case COMMAND:
                                         postCommand(CHANNEL_COMMAND, message.convertToCommand(valueSelector));
@@ -216,7 +216,7 @@ public class RFXComHandler extends BaseThingHandler implements DeviceMessageList
                                         break;
 
                                     case MOOD:
-                                        updateState(CHANNEL_MOOD, message.convertToState(valueSelector));
+                                        postCommand(CHANNEL_MOOD, message.convertToCommand(valueSelector));
                                         break;
                                     case MOTION:
                                         updateState(CHANNEL_MOTION, message.convertToState(valueSelector));
@@ -288,7 +288,7 @@ public class RFXComHandler extends BaseThingHandler implements DeviceMessageList
 
                 }
             }
-        } catch (Exception e) {
+        } catch (RFXComException e) {
             logger.error("Error occurred during message receiving", e);
         }
     }
