@@ -13,6 +13,7 @@ import static org.openhab.binding.rfxcom.RFXComBindingConstants.*;
 import java.util.List;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
+import org.eclipse.smarthome.core.library.types.IncreaseDecreaseType;
 import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -174,7 +175,7 @@ public class RFXComHandler extends BaseThingHandler implements DeviceMessageList
                                         updateState(CHANNEL_CHIME_SOUND, message.convertToState(valueSelector));
                                         break;
                                     case COMMAND:
-                                        updateState(CHANNEL_COMMAND, message.convertToState(valueSelector));
+                                        postCommand(CHANNEL_COMMAND, (Command) message.convertToState(valueSelector));
                                         break;
                                     case COMMAND_ID:
                                         updateState(CHANNEL_COMMAND_ID, message.convertToState(valueSelector));
