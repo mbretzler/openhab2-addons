@@ -63,6 +63,8 @@ public class RFXComHandler extends BaseThingHandler implements DeviceMessageList
 
             if (command instanceof RefreshType) {
                 logger.trace("Received unsupported Refresh command");
+            } else if (config.receiveOnly){
+                logger.trace("Ignored command for receive-only device");
             } else {
 
                 try {
