@@ -201,7 +201,7 @@ public class RFXComLighting1Message extends RFXComBaseMessage {
     @Override
     public Command convertToCommand(RFXComValueSelector valueSelector) throws RFXComException {
 
-        Command OHcommand;
+        Command ohCommand;
 
         if (valueSelector.getItemClass() == SwitchItem.class) {
 
@@ -210,24 +210,24 @@ public class RFXComLighting1Message extends RFXComBaseMessage {
                 switch (command) {
                     case OFF:
                     case GROUP_OFF:
-                        OHcommand = OnOffType.OFF;
+                        ohCommand = OnOffType.OFF;
                         break;
 
                     case ON:
                     case GROUP_ON:
-                        OHcommand = OnOffType.ON;
+                        ohCommand = OnOffType.ON;
                         break;
 
                     case DIM:
-                        OHcommand = IncreaseDecreaseType.DECREASE;
+                        ohCommand = IncreaseDecreaseType.DECREASE;
                         break;
 
                     case BRIGHT:
-                        OHcommand = IncreaseDecreaseType.INCREASE;
+                        ohCommand = IncreaseDecreaseType.INCREASE;
                         break;
 
                     case CHIME:
-                        OHcommand = OnOffType.ON;
+                        ohCommand = OnOffType.ON;
                         break;
 
                     default:
@@ -244,7 +244,7 @@ public class RFXComLighting1Message extends RFXComBaseMessage {
 
         }
 
-        return OHcommand;
+        return ohCommand;
     }
 
     @Override
